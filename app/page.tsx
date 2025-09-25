@@ -218,9 +218,9 @@ export default function HomePage() {
                                     key={month.value}
                                     onClick={() => selectMonth(month.value)}
                                     className={`w-full text-left px-4 py-3 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors ${currentDate.getMonth() + 1 === month.month &&
-                                            currentDate.getFullYear() === month.year
-                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
-                                            : 'text-gray-700 dark:text-gray-300'
+                                        currentDate.getFullYear() === month.year
+                                        ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300'
+                                        : 'text-gray-700 dark:text-gray-300'
                                         }`}
                                 >
                                     {month.label}
