@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Menu, Plus } from 'lucide-react';
+import { ArrowLeft, Menu, Plus, Settings } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import ThemeToggle from './ThemeToggle';
 
@@ -39,6 +39,12 @@ export default function Header({
                 </div>
 
                 <div className="flex items-center space-x-2">
+                    <button
+                        onClick={() => router.push('/settings')}
+                        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 active:bg-gray-200 dark:active:bg-gray-600 transition-colors"
+                    >
+                        <Settings className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    </button>
                     <ThemeToggle />
                     {showAdd && (
                         <button

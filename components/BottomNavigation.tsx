@@ -1,6 +1,6 @@
 'use client';
 
-import { AlertTriangle, BarChart3, CheckSquare, CreditCard, Home, Settings, StickyNote } from 'lucide-react';
+import { AlertTriangle, BarChart3, CheckSquare, CreditCard, Home, StickyNote } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function BottomNavigation() {
@@ -13,8 +13,7 @@ export default function BottomNavigation() {
         { path: '/parcels', icon: CreditCard, label: 'Parcelas' },
         { path: '/limbo', icon: AlertTriangle, label: 'Limbo' },
         { path: '/tasks', icon: CheckSquare, label: 'Tarefas' },
-        { path: '/notes', icon: StickyNote, label: 'Anotações' },
-        { path: '/settings', icon: Settings, label: 'Config' }
+        { path: '/notes', icon: StickyNote, label: 'Anotações' }
     ];
 
     const isActive = (path: string) => {
@@ -27,7 +26,7 @@ export default function BottomNavigation() {
     return (
         <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-gray-200 dark:border-slate-700 z-50">
             <div className="max-w-md mx-auto px-2 pb-safe">
-                <div className="grid grid-cols-7 gap-0 py-2">
+                <div className="grid grid-cols-6 gap-0 py-3">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const active = isActive(item.path);
