@@ -25,7 +25,7 @@ export default function RootLayout({
             </head>
             <body>
                 <ThemeProvider>
-                    <div className="mobile-container safe-area">
+                    <div className="mobile-container safe-area lg:max-w-none lg:mx-0 lg:px-0 lg:py-0">
                         {children}
                     </div>
                 </ThemeProvider>

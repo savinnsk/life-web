@@ -9,6 +9,7 @@ export interface Transaction {
     total_parcels: number;
     current_parcel: number;
     parent_transaction_id?: number;
+    is_fixed: boolean | number;
     paid: boolean;
     paid_at?: string;
     created_at: string;

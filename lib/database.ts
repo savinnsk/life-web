@@ -47,6 +47,7 @@ const initDatabase = async () => {
         total_parcels INTEGER,
         current_parcel INTEGER,
         parent_transaction_id INTEGER,
+        is_fixed BOOLEAN DEFAULT 0,
         paid BOOLEAN DEFAULT 0,
         paid_at DATETIME,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -58,6 +59,13 @@ const initDatabase = async () => {
         name TEXT NOT NULL UNIQUE,
         type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
         color TEXT DEFAULT '#3b82f6',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
+      CREATE TABLE IF NOT EXISTS limbo_debts (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        description TEXT NOT NULL,
+        amount REAL NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -92,6 +100,12 @@ const addMissingColumns = async () => {
 
     try {
         await dbExec(`ALTER TABLE transactions ADD COLUMN paid_at DATETIME`);
+    } catch (error) {
+        // Campo já existe, ignorar erro
+    }
+
+    try {
+        await dbExec(`ALTER TABLE transactions ADD COLUMN is_fixed BOOLEAN DEFAULT 0`);
     } catch (error) {
         // Campo já existe, ignorar erro
     }

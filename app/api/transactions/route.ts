@@ -43,10 +43,15 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
     try {
         const body = await request.json();
-        const { description, amount, type, category, date, is_parceled, total_parcels, paid } = body;
+        const { description, amount, type, category, date, is_parceled, total_parcels, paid, is_fixed } = body;
 
         if (!description || !amount || !type || !category || !date) {
             return NextResponse.json({ error: 'Campos obrigatórios não fornecidos' }, { status: 400 });
+        }
+
+        // Validação: não pode ser fixo e parcelado ao mesmo tempo
+        if (is_fixed && is_parceled) {
+            return NextResponse.json({ error: 'Um item não pode ser fixo e parcelado ao mesmo tempo' }, { status: 400 });
         }
 
         // Se for parcelado, criar apenas as parcelas (não a transação principal)
@@ -56,9 +61,9 @@ export async function POST(request: NextRequest) {
 
             // Criar a transação principal para referência
             const parentResult = await dbMethods.runWithId(
-                `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels)
-            VALUES (?, ?, ?, ?, ?, 0, ?)`,
-                description, amount, type, category, date, total_parcels
+                `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, is_fixed)
+            VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
+                description, amount, type, category, date, total_parcels, is_fixed || 0
             );
 
             const parentId = parentResult.lastID;
@@ -68,8 +73,8 @@ export async function POST(request: NextRequest) {
                 parcelDate.setMonth(parcelDate.getMonth() + (i - 1));
 
                 await dbMethods.runWithId(
-                    `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, current_parcel, parent_transaction_id, paid)
-           VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?)`,
+                    `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, current_parcel, parent_transaction_id, is_fixed, paid)
+           VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)`,
                     `${description} (${i}/${total_parcels})`,
                     parcelAmount,
                     type,
@@ -78,6 +83,7 @@ export async function POST(request: NextRequest) {
                     total_parcels,
                     i,
                     parentId,
+                    is_fixed || 0,
                     paid
                 );
             }
@@ -86,16 +92,43 @@ export async function POST(request: NextRequest) {
         } else {
             // Transação normal (não parcelada)
             const result = await dbMethods.runWithId(
-                `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, current_parcel, paid)
-            VALUES (?, ?, ?, ?, ?, 0, 1, 1, ?)`,
-                description, amount, type, category, date, paid
+                `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, current_parcel, is_fixed, paid)
+            VALUES (?, ?, ?, ?, ?, 0, 1, 1, ?, ?)`,
+                description, amount, type, category, date, is_fixed || 0, paid
             );
 
             const transactionId = result.lastID;
+
+            // Se for fixo, criar para os próximos 12 meses
+            if (is_fixed) {
+                await createFixedTransactions(transactionId, description, amount, type, category, date);
+            }
+
             return NextResponse.json({ id: transactionId, message: 'Transação criada com sucesso' });
         }
     } catch (error) {
         console.error('Erro ao criar transação:', error);
         return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
+    }
+}
+
+// Função para criar transações fixas para os próximos meses
+async function createFixedTransactions(parentId: number, description: string, amount: number, type: string, category: string, startDate: string) {
+    const start = new Date(startDate);
+
+    for (let i = 1; i <= 12; i++) {
+        const nextMonth = new Date(start);
+        nextMonth.setMonth(nextMonth.getMonth() + i);
+
+        await dbMethods.runWithId(
+            `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, current_parcel, parent_transaction_id, is_fixed, paid)
+         VALUES (?, ?, ?, ?, ?, 0, 1, 1, ?, 1, 0)`,
+            description,
+            amount,
+            type,
+            category,
+            nextMonth.toISOString().split('T')[0],
+            parentId
+        );
     }
 }

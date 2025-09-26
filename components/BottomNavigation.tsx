@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart3, CreditCard, Home, Plus, Settings } from 'lucide-react';
+import { AlertTriangle, BarChart3, CreditCard, Home, Plus, Settings } from 'lucide-react';
 import { usePathname, useRouter } from 'next/navigation';
 
 export default function BottomNavigation() {
@@ -12,6 +12,7 @@ export default function BottomNavigation() {
         { path: '/add', icon: Plus, label: 'Adicionar' },
         { path: '/summary', icon: BarChart3, label: 'Resumos' },
         { path: '/parcels', icon: CreditCard, label: 'Parcelas' },
+        { path: '/limbo', icon: AlertTriangle, label: 'Limbo' },
         { path: '/settings', icon: Settings, label: 'Config' }
     ];
 
@@ -25,7 +26,7 @@ export default function BottomNavigation() {
     return (
         <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-black border-t border-gray-200 dark:border-gray-900 z-50">
             <div className="max-w-md mx-auto px-4 pb-safe">
-                <div className="grid grid-cols-5 gap-1 py-3">
+                <div className="grid grid-cols-6 gap-1 py-3">
                     {navItems.map((item) => {
                         const Icon = item.icon;
                         const active = isActive(item.path);
