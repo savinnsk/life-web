@@ -1,9 +1,15 @@
+import { authenticateRequest } from '@/lib/auth';
 import { dbMethods } from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET - Buscar parcelas
 export async function GET(request: NextRequest) {
     try {
+        const user = await authenticateRequest(request);
+        if (!user) {
+            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const month = searchParams.get('month');
         const year = searchParams.get('year');
@@ -14,11 +20,11 @@ export async function GET(request: NextRequest) {
         t.*,
         c.color as category_color
       FROM transactions t
-      LEFT JOIN categories c ON t.category = c.name
-      WHERE t.is_parceled = 1 AND t.parent_transaction_id IS NOT NULL
+      LEFT JOIN categories c ON t.category = c.name AND c.user_id = t.user_id
+      WHERE t.user_id = ? AND t.is_parceled = 1 AND t.parent_transaction_id IS NOT NULL
     `;
 
-        const params: (string | number)[] = [];
+        const params: (string | number)[] = [user.id];
 
         if (month && year) {
             query += ` AND strftime('%m', t.date) = ? AND strftime('%Y', t.date) = ?`;
@@ -45,6 +51,11 @@ export async function GET(request: NextRequest) {
 // PUT - Marcar parcela como paga
 export async function PUT(request: NextRequest) {
     try {
+        const user = await authenticateRequest(request);
+        if (!user) {
+            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+        }
+
         const { id, paid } = await request.json();
 
         if (!id || typeof paid !== 'boolean') {
@@ -54,10 +65,11 @@ export async function PUT(request: NextRequest) {
         await dbMethods.runWithId(
             `UPDATE transactions
        SET paid = ?, paid_at = ?
-       WHERE id = ?`,
+       WHERE id = ? AND user_id = ?`,
             paid ? 1 : 0,
             paid ? new Date().toISOString() : null,
-            id
+            id,
+            user.id
         );
 
         return NextResponse.json({ message: 'Parcela atualizada com sucesso' });

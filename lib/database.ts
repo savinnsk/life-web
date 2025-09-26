@@ -36,8 +36,17 @@ const dbRunWithId = (sql: string, ...params: any[]): Promise<{ lastID: number; c
 const initDatabase = async () => {
     try {
         await dbExec(`
+      CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        name TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      );
+
       CREATE TABLE IF NOT EXISTS transactions (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         description TEXT NOT NULL,
         amount REAL NOT NULL,
         type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
@@ -51,36 +60,46 @@ const initDatabase = async () => {
         paid BOOLEAN DEFAULT 0,
         paid_at DATETIME,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
         FOREIGN KEY (parent_transaction_id) REFERENCES transactions(id)
       );
 
       CREATE TABLE IF NOT EXISTS categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL UNIQUE,
+        user_id INTEGER NOT NULL,
+        name TEXT NOT NULL,
         type TEXT NOT NULL CHECK (type IN ('income', 'expense')),
         color TEXT DEFAULT '#3b82f6',
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        UNIQUE(user_id, name)
       );
 
       CREATE TABLE IF NOT EXISTS limbo_debts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
         description TEXT NOT NULL,
         amount REAL NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
       );
 
-      -- Inserir categorias padrão
-      INSERT OR IGNORE INTO categories (name, type, color) VALUES
-        ('Salário', 'income', '#22c55e'),
-        ('Freelance', 'income', '#22c55e'),
-        ('Investimentos', 'income', '#22c55e'),
-        ('Alimentação', 'expense', '#ef4444'),
-        ('Transporte', 'expense', '#ef4444'),
-        ('Moradia', 'expense', '#ef4444'),
-        ('Saúde', 'expense', '#ef4444'),
-        ('Educação', 'expense', '#ef4444'),
-        ('Lazer', 'expense', '#ef4444'),
-        ('Outros', 'expense', '#6b7280');
+      -- Criar trigger para inserir categorias padrão quando um usuário é criado
+      CREATE TRIGGER IF NOT EXISTS insert_default_categories
+      AFTER INSERT ON users
+      BEGIN
+        INSERT INTO categories (user_id, name, type, color) VALUES
+          (NEW.id, 'Salário', 'income', '#22c55e'),
+          (NEW.id, 'Freelance', 'income', '#22c55e'),
+          (NEW.id, 'Investimentos', 'income', '#22c55e'),
+          (NEW.id, 'Alimentação', 'expense', '#ef4444'),
+          (NEW.id, 'Transporte', 'expense', '#ef4444'),
+          (NEW.id, 'Moradia', 'expense', '#ef4444'),
+          (NEW.id, 'Saúde', 'expense', '#ef4444'),
+          (NEW.id, 'Educação', 'expense', '#ef4444'),
+          (NEW.id, 'Lazer', 'expense', '#ef4444'),
+          (NEW.id, 'Outros', 'expense', '#6b7280');
+      END;
     `);
     } catch (error) {
         console.error('Erro ao inicializar banco de dados:', error);
@@ -106,6 +125,19 @@ const addMissingColumns = async () => {
 
     try {
         await dbExec(`ALTER TABLE transactions ADD COLUMN is_fixed BOOLEAN DEFAULT 0`);
+    } catch (error) {
+        // Campo já existe, ignorar erro
+    }
+
+    // Migração para alterar email para username
+    try {
+        await dbExec(`ALTER TABLE users ADD COLUMN username TEXT`);
+    } catch (error) {
+        // Campo já existe, ignorar erro
+    }
+
+    try {
+        await dbExec(`ALTER TABLE users ADD COLUMN name TEXT`);
     } catch (error) {
         // Campo já existe, ignorar erro
     }

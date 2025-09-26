@@ -1,9 +1,15 @@
+import { authenticateRequest } from '@/lib/auth';
 import { dbMethods } from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
 
 // PUT - Atualizar dívida do Limbo
 export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
     try {
+        const user = await authenticateRequest(request);
+        if (!user) {
+            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+        }
+
         const { id } = params;
         const body = await request.json();
         const { description, amount } = body;
@@ -13,8 +19,8 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
         }
 
         await dbMethods.run(
-            'UPDATE limbo_debts SET description = ?, amount = ? WHERE id = ?',
-            [description, amount, id]
+            'UPDATE limbo_debts SET description = ?, amount = ? WHERE id = ? AND user_id = ?',
+            [description, amount, id, user.id]
         );
 
         return NextResponse.json({ message: 'Dívida atualizada com sucesso' });
@@ -27,9 +33,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 // DELETE - Deletar dívida do Limbo
 export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
     try {
+        const user = await authenticateRequest(request);
+        if (!user) {
+            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+        }
+
         const { id } = params;
 
-        await dbMethods.run('DELETE FROM limbo_debts WHERE id = ?', [id]);
+        await dbMethods.run('DELETE FROM limbo_debts WHERE id = ? AND user_id = ?', [id, user.id]);
 
         return NextResponse.json({ message: 'Dívida deletada com sucesso' });
     } catch (error) {

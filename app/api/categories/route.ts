@@ -1,9 +1,15 @@
+import { authenticateRequest } from '@/lib/auth';
 import { dbMethods } from '@/lib/database';
 import { NextRequest, NextResponse } from 'next/server';
 
 // GET - Buscar categorias
 export async function GET(request: NextRequest) {
     try {
+        const user = await authenticateRequest(request);
+        if (!user) {
+            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const type = searchParams.get('type');
         const month = searchParams.get('month');
@@ -16,10 +22,10 @@ export async function GET(request: NextRequest) {
                     t.category,
                     c.color,
                     SUM(t.amount) as total,
-                    ROUND((SUM(t.amount) * 100.0 / (SELECT SUM(amount) FROM transactions WHERE type = 'expense' AND strftime('%m', date) = ? AND strftime('%Y', date) = ?)), 2) as percentage
+                    ROUND((SUM(t.amount) * 100.0 / (SELECT SUM(amount) FROM transactions WHERE user_id = ? AND type = 'expense' AND strftime('%m', date) = ? AND strftime('%Y', date) = ?)), 2) as percentage
                 FROM transactions t
-                LEFT JOIN categories c ON t.category = c.name
-                WHERE t.type = 'expense'
+                LEFT JOIN categories c ON t.category = c.name AND c.user_id = t.user_id
+                WHERE t.user_id = ? AND t.type = 'expense'
                 AND strftime('%m', t.date) = ?
                 AND strftime('%Y', t.date) = ?
                 AND (t.is_parceled = 0 OR t.is_parceled IS NULL)
@@ -27,18 +33,18 @@ export async function GET(request: NextRequest) {
                 ORDER BY total DESC
             `;
 
-            const params = [month.padStart(2, '0'), year, month.padStart(2, '0'), year];
+            const params = [user.id, month.padStart(2, '0'), year, user.id, month.padStart(2, '0'), year];
             const categories = await dbMethods.all(query, params);
 
             return NextResponse.json(categories);
         }
 
         // Buscar categorias normais
-        let query = 'SELECT * FROM categories';
-        const params: (string | number)[] = [];
+        let query = 'SELECT * FROM categories WHERE user_id = ?';
+        const params: (string | number)[] = [user.id];
 
         if (type) {
-            query += ' WHERE type = ?';
+            query += ' AND type = ?';
             params.push(type);
         }
 
@@ -56,6 +62,11 @@ export async function GET(request: NextRequest) {
 // POST - Criar categoria
 export async function POST(request: NextRequest) {
     try {
+        const user = await authenticateRequest(request);
+        if (!user) {
+            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { name, type, color } = body;
 
@@ -64,9 +75,9 @@ export async function POST(request: NextRequest) {
         }
 
         const result = await dbMethods.runWithId(
-            `INSERT INTO categories (name, type, color)
-       VALUES (?, ?, ?)`,
-            name, type, color || '#3b82f6'
+            `INSERT INTO categories (user_id, name, type, color)
+       VALUES (?, ?, ?, ?)`,
+            user.id, name, type, color || '#3b82f6'
         );
 
         const categoryId = result.lastID;

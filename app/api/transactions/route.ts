@@ -1,3 +1,4 @@
+import { authenticateRequest } from '@/lib/auth';
 import { dbMethods } from '@/lib/database';
 import { Transaction } from '@/lib/types';
 import { NextRequest, NextResponse } from 'next/server';
@@ -5,6 +6,11 @@ import { NextRequest, NextResponse } from 'next/server';
 // GET - Buscar transações
 export async function GET(request: NextRequest) {
     try {
+        const user = await authenticateRequest(request);
+        if (!user) {
+            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+        }
+
         const { searchParams } = new URL(request.url);
         const month = searchParams.get('month');
         const year = searchParams.get('year');
@@ -13,10 +19,10 @@ export async function GET(request: NextRequest) {
         let query = `
       SELECT t.*, c.color as category_color
       FROM transactions t
-      LEFT JOIN categories c ON t.category = c.name
-      WHERE 1=1
+      LEFT JOIN categories c ON t.category = c.name AND c.user_id = t.user_id
+      WHERE t.user_id = ?
     `;
-        const params: (string | number)[] = [];
+        const params: (string | number)[] = [user.id];
 
         if (month && year) {
             query += ` AND strftime('%m', t.date) = ? AND strftime('%Y', t.date) = ?`;
@@ -42,6 +48,11 @@ export async function GET(request: NextRequest) {
 // POST - Criar transação
 export async function POST(request: NextRequest) {
     try {
+        const user = await authenticateRequest(request);
+        if (!user) {
+            return NextResponse.json({ error: 'Não autenticado' }, { status: 401 });
+        }
+
         const body = await request.json();
         const { description, amount, type, category, date, is_parceled, total_parcels, paid, is_fixed } = body;
 
@@ -61,9 +72,9 @@ export async function POST(request: NextRequest) {
 
             // Criar a transação principal para referência
             const parentResult = await dbMethods.runWithId(
-                `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, is_fixed)
-            VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
-                description, amount, type, category, date, total_parcels, is_fixed || 0
+                `INSERT INTO transactions (user_id, description, amount, type, category, date, is_parceled, total_parcels, is_fixed)
+            VALUES (?, ?, ?, ?, ?, ?, 0, ?, ?)`,
+                user.id, description, amount, type, category, date, total_parcels, is_fixed || 0
             );
 
             const parentId = parentResult.lastID;
@@ -73,8 +84,9 @@ export async function POST(request: NextRequest) {
                 parcelDate.setMonth(parcelDate.getMonth() + (i - 1));
 
                 await dbMethods.runWithId(
-                    `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, current_parcel, parent_transaction_id, is_fixed, paid)
-           VALUES (?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)`,
+                    `INSERT INTO transactions (user_id, description, amount, type, category, date, is_parceled, total_parcels, current_parcel, parent_transaction_id, is_fixed, paid)
+           VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)`,
+                    user.id,
                     `${description} (${i}/${total_parcels})`,
                     parcelAmount,
                     type,
@@ -92,16 +104,16 @@ export async function POST(request: NextRequest) {
         } else {
             // Transação normal (não parcelada)
             const result = await dbMethods.runWithId(
-                `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, current_parcel, is_fixed, paid)
-            VALUES (?, ?, ?, ?, ?, 0, 1, 1, ?, ?)`,
-                description, amount, type, category, date, is_fixed || 0, paid
+                `INSERT INTO transactions (user_id, description, amount, type, category, date, is_parceled, total_parcels, current_parcel, is_fixed, paid)
+            VALUES (?, ?, ?, ?, ?, ?, 0, 1, 1, ?, ?)`,
+                user.id, description, amount, type, category, date, is_fixed || 0, paid
             );
 
             const transactionId = result.lastID;
 
             // Se for fixo, criar para os próximos 12 meses
             if (is_fixed) {
-                await createFixedTransactions(transactionId, description, amount, type, category, date);
+                await createFixedTransactions(user.id, transactionId, description, amount, type, category, date);
             }
 
             return NextResponse.json({ id: transactionId, message: 'Transação criada com sucesso' });
@@ -113,7 +125,7 @@ export async function POST(request: NextRequest) {
 }
 
 // Função para criar transações fixas para os próximos meses
-async function createFixedTransactions(parentId: number, description: string, amount: number, type: string, category: string, startDate: string) {
+async function createFixedTransactions(userId: number, parentId: number, description: string, amount: number, type: string, category: string, startDate: string) {
     const start = new Date(startDate);
 
     for (let i = 1; i <= 12; i++) {
@@ -121,8 +133,9 @@ async function createFixedTransactions(parentId: number, description: string, am
         nextMonth.setMonth(nextMonth.getMonth() + i);
 
         await dbMethods.runWithId(
-            `INSERT INTO transactions (description, amount, type, category, date, is_parceled, total_parcels, current_parcel, parent_transaction_id, is_fixed, paid)
-         VALUES (?, ?, ?, ?, ?, 0, 1, 1, ?, 1, 0)`,
+            `INSERT INTO transactions (user_id, description, amount, type, category, date, is_parceled, total_parcels, current_parcel, parent_transaction_id, is_fixed, paid)
+         VALUES (?, ?, ?, ?, ?, ?, 0, 1, 1, ?, 1, 0)`,
+            userId,
             description,
             amount,
             type,
