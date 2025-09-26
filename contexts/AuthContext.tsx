@@ -27,13 +27,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const checkAuth = async () => {
         try {
-            const response = await fetch('/api/auth/me');
+            const response = await fetch('/api/auth/me', {
+                credentials: 'include'
+            });
+
             if (response.ok) {
                 const data = await response.json();
                 setUser(data.user);
+            } else {
+                setUser(null);
             }
         } catch (error) {
             console.error('Erro ao verificar autenticação:', error);
+            setUser(null);
         } finally {
             setLoading(false);
         }

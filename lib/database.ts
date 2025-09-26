@@ -84,6 +84,33 @@ const initDatabase = async () => {
         FOREIGN KEY (user_id) REFERENCES users(id)
       );
 
+      CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT,
+        tags TEXT,
+        status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')),
+        priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
+        due_date TEXT,
+        completed_at DATETIME,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS notes (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        title TEXT NOT NULL,
+        content TEXT,
+        tags TEXT,
+        color TEXT DEFAULT '#3b82f6',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      );
+
       -- Criar trigger para inserir categorias padrão quando um usuário é criado
       CREATE TRIGGER IF NOT EXISTS insert_default_categories
       AFTER INSERT ON users
@@ -99,6 +126,7 @@ const initDatabase = async () => {
           (NEW.id, 'Educação', 'expense', '#ef4444'),
           (NEW.id, 'Lazer', 'expense', '#ef4444'),
           (NEW.id, 'Outros', 'expense', '#6b7280');
+
       END;
     `);
     } catch (error) {

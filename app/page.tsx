@@ -10,7 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Transaction } from '@/lib/types';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { AlertTriangle, BarChart3, Calendar, CreditCard, Filter, Home, LogOut, Plus, Settings, User } from 'lucide-react';
+import { AlertTriangle, BarChart3, Calendar, CheckSquare, CreditCard, Filter, Home, LogOut, Plus, Settings, StickyNote, User } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface MonthlySummary {
@@ -273,6 +273,14 @@ export default function HomePage() {
                                             <AlertTriangle className="w-5 h-5" />
                                             <span>Limbo</span>
                                         </a>
+                                        <a href="/tasks" className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                            <CheckSquare className="w-5 h-5" />
+                                            <span>Tarefas</span>
+                                        </a>
+                                        <a href="/notes" className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                            <StickyNote className="w-5 h-5" />
+                                            <span>Anotações</span>
+                                        </a>
                                         <a href="/settings" className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                             <Settings className="w-5 h-5" />
                                             <span>Configurações</span>
@@ -498,7 +506,7 @@ export default function HomePage() {
                     </div>
 
                     {/* Lista de Transações */}
-                    <div className="space-y-3">
+                    <div className="space-y-4">
                         {transactions.length === 0 ? (
                             <div className="card text-center py-8">
                                 <p className="text-gray-500 dark:text-gray-400 mb-2">Nenhuma transação encontrada</p>
@@ -508,17 +516,21 @@ export default function HomePage() {
                             </div>
                         ) : (
                             transactions.map((transaction) => (
-                                <TransactionCard
-                                    key={transaction.id}
-                                    transaction={transaction}
-                                    onEdit={handleEditTransaction}
-                                    onDelete={handleDeleteTransaction}
-                                />
+                                <div key={transaction.id} className="mb-4 last:mb-0">
+                                    <TransactionCard
+                                        transaction={transaction}
+                                        onEdit={handleEditTransaction}
+                                        onDelete={handleDeleteTransaction}
+                                    />
+                                </div>
                             ))
                         )}
                     </div>
 
-                    <BottomNavigation />
+                    {/* Bottom Navigation apenas no mobile */}
+                    <div className="lg:hidden">
+                        <BottomNavigation />
+                    </div>
                 </div>
 
                 {/* Formulário de Transação */}

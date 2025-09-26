@@ -29,7 +29,7 @@ export default function TransactionCard({ transaction, onEdit, onDelete, onMarkA
     };
 
     return (
-        <div className="card mb-3 lg:mb-0 lg:p-4">
+        <div className="card lg:mb-0 lg:p-4">
             <div className="flex items-start justify-between">
                 <div className="flex-1 min-w-0">
                     <div className="flex items-center space-x-3 mb-2">

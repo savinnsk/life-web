@@ -97,8 +97,8 @@ export default function TransactionForm({ transaction, onSave, onCancel }: Trans
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[9999] flex items-end lg:items-center justify-center">
-            <div className="bg-white dark:bg-gray-800 rounded-t-2xl lg:rounded-2xl w-full max-w-md lg:max-w-2xl max-h-[85vh] lg:max-h-[90vh] flex flex-col shadow-2xl mx-4">
-                <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center justify-between">
+            <div className="bg-white dark:bg-slate-800 rounded-t-2xl lg:rounded-2xl w-full max-w-md lg:max-w-2xl max-h-[85vh] lg:max-h-[90vh] flex flex-col shadow-2xl mx-4">
+                <div className="sticky top-0 bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between">
                     <h2 className="text-lg font-bold text-gray-900 dark:text-gray-100">
                         {transaction ? 'Editar Transação' : 'Nova Transação'}
                     </h2>
@@ -127,7 +127,7 @@ export default function TransactionForm({ transaction, onSave, onCancel }: Trans
                                             onClick={() => handleInputChange('type', 'income')}
                                             className={`p-3 rounded-lg border-2 transition-colors ${formData.type === 'income'
                                                 ? 'border-success-500 bg-success-50 dark:bg-success-900/30 text-success-700 dark:text-success-300'
-                                                : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200'
+                                                : 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200'
                                                 }`}
                                         >
                                             <div className="flex items-center justify-center space-x-2">
@@ -140,7 +140,7 @@ export default function TransactionForm({ transaction, onSave, onCancel }: Trans
                                             onClick={() => handleInputChange('type', 'expense')}
                                             className={`p-3 rounded-lg border-2 transition-colors ${formData.type === 'expense'
                                                 ? 'border-danger-500 bg-danger-50 dark:bg-danger-900/30 text-danger-700 dark:text-danger-300'
-                                                : 'border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200'
+                                                : 'border-gray-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-gray-700 dark:text-slate-200'
                                                 }`}
                                         >
                                             <div className="flex items-center justify-center space-x-2">
@@ -245,7 +245,7 @@ export default function TransactionForm({ transaction, onSave, onCancel }: Trans
                                         type="checkbox"
                                         checked={formData.is_parceled}
                                         onChange={(e) => handleInputChange('is_parceled', e.target.checked)}
-                                        className="w-4 h-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-700"
+                                        className="w-4 h-4 text-primary-600 border-gray-300 dark:border-slate-600 rounded focus:ring-primary-500 bg-white dark:bg-slate-700"
                                     />
                                     <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                                         Esta transação é parcelada
@@ -260,7 +260,7 @@ export default function TransactionForm({ transaction, onSave, onCancel }: Trans
                                         type="checkbox"
                                         checked={formData.is_fixed}
                                         onChange={(e) => handleInputChange('is_fixed', e.target.checked)}
-                                        className="w-4 h-4 text-primary-600 border-gray-300 dark:border-gray-600 rounded focus:ring-primary-500 bg-white dark:bg-gray-700"
+                                        className="w-4 h-4 text-primary-600 border-gray-300 dark:border-slate-600 rounded focus:ring-primary-500 bg-white dark:bg-slate-700"
                                     />
                                     <div className="flex items-center space-x-2">
                                         <Repeat className="w-4 h-4 text-gray-500" />
@@ -304,7 +304,7 @@ export default function TransactionForm({ transaction, onSave, onCancel }: Trans
                 </div>
 
                 {/* Botões fixos */}
-                <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex-shrink-0">
+                <div className="p-4 border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex-shrink-0">
                     <div className="flex space-x-3">
                         <button
                             type="button"

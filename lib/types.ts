@@ -41,3 +41,28 @@ export interface ParcelInfo {
     paidAmount: number;
     remainingAmount: number;
 }
+
+export interface Task {
+    id: number;
+    user_id: number;
+    title: string;
+    description?: string;
+    tags?: string;
+    status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+    priority: 'low' | 'medium' | 'high' | 'urgent';
+    due_date?: string;
+    completed_at?: string;
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Note {
+    id: number;
+    user_id: number;
+    title: string;
+    content?: string;
+    tags?: string;
+    color: string;
+    created_at: string;
+    updated_at: string;
+}

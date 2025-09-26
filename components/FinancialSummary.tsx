@@ -29,7 +29,7 @@ export default function FinancialSummary({
     return (
         <div className="space-y-6">
             {/* Saldo Principal */}
-            <div className={`bg-white dark:bg-black rounded-lg border text-center p-4 ${isPositive ? 'bg-success-50 dark:bg-success-900/20 border-success-200 dark:border-success-800' : 'bg-danger-50 dark:bg-danger-900/20 border-danger-200 dark:border-danger-800'
+            <div className={`bg-white dark:bg-slate-800 rounded-lg border text-center p-4 ${isPositive ? 'bg-success-50 dark:bg-success-900/20 border-success-200 dark:border-success-800' : 'bg-danger-50 dark:bg-danger-900/20 border-danger-200 dark:border-danger-800'
                 }`}>
                 <div className="flex items-center justify-center space-x-3 mb-4">
                     <DollarSign className={`w-6 h-6 ${isPositive ? 'text-success-600' : 'text-danger-600'

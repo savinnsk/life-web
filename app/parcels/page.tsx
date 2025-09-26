@@ -5,7 +5,7 @@ import Header from '@/components/Header';
 import TransactionCard from '@/components/TransactionCard';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { AlertCircle, AlertTriangle, BarChart3, CreditCard, DollarSign, Home, Settings } from 'lucide-react';
+import { AlertCircle, AlertTriangle, BarChart3, CheckSquare, CreditCard, DollarSign, Home, Settings, StickyNote } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface Parcel {
@@ -138,6 +138,14 @@ export default function ParcelsPage() {
                                     <a href="/limbo" className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                         <AlertTriangle className="w-5 h-5" />
                                         <span>Limbo</span>
+                                    </a>
+                                    <a href="/tasks" className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <CheckSquare className="w-5 h-5" />
+                                        <span>Tarefas</span>
+                                    </a>
+                                    <a href="/notes" className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                                        <StickyNote className="w-5 h-5" />
+                                        <span>Anotações</span>
                                     </a>
                                     <a href="/settings" className="flex items-center space-x-3 px-4 py-2 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                                         <Settings className="w-5 h-5" />
@@ -338,6 +346,10 @@ export default function ParcelsPage() {
                     )}
                 </div>
 
+            </div>
+
+            {/* Bottom Navigation apenas no mobile */}
+            <div className="lg:hidden">
                 <BottomNavigation />
             </div>
         </div>

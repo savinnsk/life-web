@@ -24,7 +24,7 @@ export default function Header({
     const router = useRouter();
 
     return (
-        <header className="sticky top-0 z-50 bg-white dark:bg-black border-b border-gray-200 dark:border-gray-900 px-4 py-3 -mx-4 mb-6">
+        <header className="sticky top-0 z-50 bg-white dark:bg-slate-900 border-b border-gray-200 dark:border-slate-700 px-4 py-3 -mx-4 mb-6">
             <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                     {showBack && (
