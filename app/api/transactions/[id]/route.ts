@@ -89,7 +89,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
             // Se foi marcado como fixo agora, criar para os próximos meses
             if (is_fixed && !currentTransaction.is_fixed) {
-                await createFixedTransactions(user.id, id, description, amount, type, category, date);
+                await createFixedTransactions(user.id, parseInt(id), description, amount, type, category, date);
             }
         }
 

@@ -20,6 +20,7 @@ interface Parcel {
     category: string;
     paid: boolean;
     is_parceled: boolean;
+    is_fixed: boolean | number;
     created_at: string;
 }
 
