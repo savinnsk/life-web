@@ -286,7 +286,7 @@ export default function TasksPage() {
                 </div>
 
                 {/* Layout Mobile */}
-                <div className="lg:hidden p-4">
+                <div className="lg:hidden p-4 pb-20">
                     <TaskFilters
                         onFilterChange={setFilters}
                         currentFilters={filters}

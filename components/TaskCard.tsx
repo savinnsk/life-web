@@ -88,11 +88,17 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
     const taskTags = task.tags ? task.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [];
 
     return (
-        <div className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 mb-3 ${getStatusColor(task.status)} transition-all duration-200 hover:shadow-md`}>
+        <div
+            className={`bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-gray-200 dark:border-slate-700 p-4 mb-3 ${getStatusColor(task.status)} transition-all duration-200 hover:shadow-md cursor-pointer`}
+            onClick={() => onEdit(task)}
+        >
             <div className="flex items-start justify-between">
                 <div className="flex items-start space-x-3 flex-1">
                     <button
-                        onClick={() => onStatusChange(task.id, task.status === 'completed' ? 'pending' : 'completed')}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onStatusChange(task.id, task.status === 'completed' ? 'pending' : 'completed');
+                        }}
                         className="mt-1 hover:scale-110 transition-transform"
                     >
                         {getStatusIcon(task.status)}
@@ -139,7 +145,10 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
 
                 <div className="relative">
                     <button
-                        onClick={() => setShowActions(!showActions)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            setShowActions(!showActions);
+                        }}
                         className="p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                     >
                         <MoreVertical className="w-4 h-4 text-gray-500" />
@@ -148,7 +157,8 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
                     {showActions && (
                         <div className="absolute right-0 top-8 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg shadow-lg z-10 min-w-[120px]">
                             <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     onEdit(task);
                                     setShowActions(false);
                                 }}
@@ -158,7 +168,8 @@ export default function TaskCard({ task, onEdit, onDelete, onStatusChange }: Tas
                                 <span>Editar</span>
                             </button>
                             <button
-                                onClick={() => {
+                                onClick={(e) => {
+                                    e.stopPropagation();
                                     onDelete(task.id);
                                     setShowActions(false);
                                 }}
